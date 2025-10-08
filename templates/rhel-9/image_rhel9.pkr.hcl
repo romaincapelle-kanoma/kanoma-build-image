@@ -70,7 +70,7 @@ source "googlecompute" "kanoma_image_rhel" {
 }
 
 build {
-  sources = ["sources.googlecompute.iaas_image_rhel"]
+  sources = ["sources.googlecompute.kanoma_image_rhel"]
   provisioner "ansible" {
     playbook_file   = "../../ansible/${var.file_script}"
     # galaxy_file     = "../../ansible/collections/requirements.yml"

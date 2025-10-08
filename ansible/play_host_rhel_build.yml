@@ -1,0 +1,34 @@
+---
+- name: Configurer le serveur web Nginx
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Installer Nginx
+      dnf:
+        name: nginx
+        state: present
+
+    - name: Créer la page d'accueil personnalisée
+      copy:
+        content: |
+          <!DOCTYPE html>
+          <html lang="fr">
+          <head>
+            <title>Bienvenue !</title>
+            <meta charset="UTF-8">
+          </head>
+          <body>
+            <h1>Bienvenue sur mon application</h1>
+          </body>
+          </html>
+        dest: /var/www/html/index.html
+        owner: www-data
+        group: www-data
+        mode: '0644'
+
+    - name: S'assurer que le service Nginx est démarré et activé au boot
+      service:
+        name: nginx
+        state: started
+        enabled: yes

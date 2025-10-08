@@ -47,17 +47,6 @@ jobs:
     outputs:
       IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
     steps:
-      - name: Mapping des variables d'environnement
-        uses: kanga333/variable-mapper@master
-        with:
-          key: "${{ inputs.project_id }}"
-          map: |
-            {
-              "k-ops-sandbox": {
-                "satf": "sa-buildimage",
-                "wif_id": "270411317394",
-              }
-            }
 
       - uses: actions/checkout@v4
 
@@ -65,8 +54,8 @@ jobs:
         name: Authentification GCP with workload identity federation
         uses: 'google-github-actions/auth@v2'
         with:
-          workload_identity_provider: 'projects/${{ env.wif_id }}/locations/global/workloadIdentityPools/github-actions-packer/providers/github-provider'
-          service_account: '${{ env.satf }}@${{ inputs.project_id }}.iam.gserviceaccount.com'
+          workload_identity_provider: 'projects/270411317394/locations/global/workloadIdentityPools/github-actions-packer/providers/github-provider'
+          service_account: 'sa-buildimage@${{ inputs.project_id }}.iam.gserviceaccount.com'
           create_credentials_file: true
           token_format: 'access_token'
           access_token_lifetime: '3600s'

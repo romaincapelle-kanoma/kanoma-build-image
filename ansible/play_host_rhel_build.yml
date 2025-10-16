@@ -9,7 +9,7 @@
         name: nginx
         state: present
         # Le paramètre 'disable_repo' est l'équivalent de '--disablerepo' pour dnf/yum.
-        disable_repo: google-compute-engine
+        disablerepo: google-compute-engine
 
     - name: Créer la page d'accueil personnalisée
       copy:

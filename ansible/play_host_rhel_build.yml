@@ -4,10 +4,12 @@
   become: yes
   tasks:
 
-    - name: Installer Nginx
-      dnf:
+    - name: Installation de nginx via dnf en désactivant le dépôt specifique
+      ansible.builtin.dnf:
         name: nginx
         state: present
+        # Le paramètre 'disable_repo' est l'équivalent de '--disablerepo' pour dnf/yum.
+        disable_repo: google-compute-engine
 
     - name: Créer la page d'accueil personnalisée
       copy:

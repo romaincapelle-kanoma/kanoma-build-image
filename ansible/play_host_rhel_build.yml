@@ -31,8 +31,8 @@
           </body>
           </html>
         dest: /var/www/html/index.html
-        owner: www-data
-        group: www-data
+        owner: nginx
+        group: nginx
         mode: '0755'
 
     - name: S'assurer que le service Nginx est démarré et activé au boot

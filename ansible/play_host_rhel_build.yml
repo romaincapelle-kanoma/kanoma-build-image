@@ -8,11 +8,6 @@
       ansible.builtin.dnf:
         name: nginx
         state: present
-        # Le paramètre 'disable_repo' est l'équivalent de '--disablerepo' pour dnf/yum.
-        disablerepo: 
-          - google-compute-engine
-          - google-cloud-sdk
-          - rhui-rhel-9-for-x86_64-appstream-rhui-debug-rpms
 
     - name: Créer la page d'accueil personnalisée
       copy:

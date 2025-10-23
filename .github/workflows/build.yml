@@ -50,6 +50,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
+    env:
+      PACKER_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
 
       - uses: actions/checkout@v4

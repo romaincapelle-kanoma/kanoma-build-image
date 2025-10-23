@@ -19,7 +19,7 @@ variable "source_image_family" {
 
 variable "gcp-zone" {
   type    = string
-  default = "europe-west9-c"
+  default = "europe-west9-b"
 }
 
 variable "prefix_name" {

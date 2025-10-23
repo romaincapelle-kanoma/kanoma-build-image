@@ -9,14 +9,6 @@
         name: nginx
         state: present
 
-    - name: Création du dossier
-      ansible.builtin.file:
-        path: /var/www/html
-        state: directory # S'assure que c'est un répertoire
-        owner: nginx     # Définit le propriétaire (souvent 'nginx' ou 'apache')
-        group: nginx
-        mode: '0755'
-
     - name: Créer la page d'accueil personnalisée
       copy:
         content: |
@@ -30,7 +22,7 @@
             <h1>Bienvenue sur mon application</h1>
           </body>
           </html>
-        dest: /var/www/html/index.html
+        dest: /usr/share/nginx/html/index.html
         owner: nginx
         group: nginx
         mode: '0755'

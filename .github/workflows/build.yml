@@ -94,4 +94,49 @@ jobs:
           IMAGE_NAME=$(cat manifest.json | jq -r '.builds[0].custom_data.image_name')
           echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
           echo "IMAGE_NAME=$IMAGE_NAME"
+
+  validate:
+    needs: build
+    if: ${{ inputs.validate == true }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: 'auth'
+        name: Authentification GCP with workload identity federation
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: 'projects/270411317394/locations/global/workloadIdentityPools/github-actions-packer/providers/github-provider'
+          service_account: 'sa-buildimage@${{ inputs.project_id }}.iam.gserviceaccount.com'
+
+      - id: 'gcloud'
+        name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: Install Goss
+        run: |
+          curl -L https://github.com/goss-org/goss/releases/latest/download/goss-linux-amd64 -o /usr/local/bin/goss
+          chmod +x /usr/local/bin/goss
+
+      - name: Create test instance from image
+        id: create_instance
+        run: |
+          INSTANCE_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}"
+          gcloud compute instances create $INSTANCE_NAME \
+            --project=${{ inputs.project_id }} \
+            --zone=europe-west9-b \
+            --image=${{ needs.build.outputs.IMAGE_NAME }} \
+            --machine-type=e2-micro \
+            --scopes=https://www.googleapis.com/auth/cloud-platform \
+            --format='value(name)'
+          echo "INSTANCE_NAME=$INSTANCE_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Run Goss tests
+        run: |
+          gcloud compute ssh ${{ steps.create_instance.outputs.INSTANCE_NAME }} --project=${{ inputs.project_id }} --zone=europe-west1-b --command="curl -L https://github.com/goss-org/goss/releases/latest/download/goss-linux-amd64 -o /tmp/goss && chmod +x /tmp/goss"
+          gcloud compute scp --project=${{ inputs.project_id }} --zone=europe-west1-b ansible/goss/goss.yaml ${{ steps.create_instance.outputs.INSTANCE_NAME }}:/tmp/goss.yaml
+          gcloud compute ssh ${{ steps.create_instance.outputs.INSTANCE_NAME }} --project=${{ inputs.project_id }} --zone=europe-west1-b --command="sudo /tmp/goss -g /tmp/goss.yaml validate"
           

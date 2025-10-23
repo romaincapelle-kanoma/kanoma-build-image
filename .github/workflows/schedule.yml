@@ -1,0 +1,32 @@
+# name: Scheduled Image Build
+
+# on:
+#   schedule:
+#     # Exécute le workflow tous les dimanches à 3h00 du matin (UTC)
+#     - cron: '0 3 * * 0'
+
+#   # Permet de lancer ce workflow manuellement depuis l'interface GitHub Actions
+#   workflow_dispatch:
+
+# jobs:
+#   # Job pour construire l'image RHEL 9
+#   build-rhel9:
+#     uses: ./.github/workflows/build.yml
+#     with:
+#       project_id: 'k-ops-sandbox'
+#       machine_type: 'rhel-9'
+#       validate: true
+#     permissions:
+#       contents: 'read'
+#       id-token: 'write'
+
+#   # Job pour construire l'image RHEL 8 en parallèle
+#   build-rhel8:
+#     uses: ./.github/workflows/build.yml
+#     with:
+#       project_id: 'k-ops-sandbox'
+#       machine_type: 'rhel-8'
+#       validate: true
+#     permissions:
+#       contents: 'read'
+#       id-token: 'write'

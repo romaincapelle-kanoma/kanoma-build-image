@@ -1,21 +1,21 @@
 # kanoma-build-image
 <img align="left" width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/72cca1bc-14e9-4e4b-b9f2-217a1bcae610" />
 
-<p align="right">
-   <strong>Status: Bêta</strong>
-   <br />
-   <strong>Version: </strong>0.0.1
-   <br />
-   <br />
-   Ce projet a pour but de construire des images de machines virtuelles (VM) pour Google Cloud Platform (GCP) de manière automatisée, reproductible et validée, en utilisant un pipeline CI/CD avec GitHub Actions.
-   <br />
-   - **Automatisation** : Construire des images sans intervention manuelle.
-   - **Standardisation** : S'assurer que toutes les images sont basées sur une configuration commune et validée.
-   - **Validation** : Tester chaque image après sa construction pour garantir sa conformité.
-   - **Sécurité** : Utiliser des méthodes d'authentification modernes et sécurisées (Workload Identity Federation).
-  </p>
+<p>
+    <strong>Status: Bêta</strong>
+    <br>
+    <strong>Version: </strong>0.0.1
+    <br>
+    <br>
+    Ce projet a pour but de construire des images de machines virtuelles (VM) pour Google Cloud Platform (GCP) de manière automatisée, reproductible et validée, en utilisant un pipeline CI/CD avec GitHub Actions.
 </p>
-</br>
+
+<ul style="text-align: right; list-style-type: none; padding: 0; margin: 0;">
+    <li><strong>Automatisation</strong> : Construire des images sans intervention manuelle.</li>
+    <li><strong>Standardisation</strong> : S'assurer que toutes les images sont basées sur une configuration commune et validée.</li>
+    <li><strong>Validation</strong> : Tester chaque image après sa construction pour garantir sa conformité.</li>
+    <li><strong>Sécurité</strong> : Utiliser des méthodes d'authentification modernes et sécurisées (Workload Identity Federation).</li>
+</ul>
 
 
 

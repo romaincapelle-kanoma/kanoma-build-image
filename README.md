@@ -19,7 +19,7 @@ Notre pipeline s'articule autour de plusieurs outils clés :
 | :--- | :--- |
 | **Packer** | L'outil principal qui orchestre la création de l'image sur GCP. |
 | **Ansible** | Le provisioner utilisé par Packer pour configurer la VM (installer Nginx, etc.). |
-| **Testinfra** | Un framework de test en Python pour valider l'état de la VM après sa création. |
+| **Goss** | Un outil rapide de validation de serveur basé sur du YAML pour tester l'image. |
 | **GitHub Actions** | L'orchestrateur CI/CD qui exécute les différentes étapes du processus. |
 
 ---
@@ -39,7 +39,25 @@ Le workflow peut être lancé de deux manières :
 Ce job est responsable de la création de l'image brute.
 
 1.  **Authentification GCP** : Le workflow s'authentifie sur GCP de manière sécurisée sans utiliser de clé de service JSON. Il utilise **Workload Identity Federation**, où GitHub est approuvé comme fournisseur d'identité pour un Service Account GCP.
-
+    
+    **Détail du fonctionnement de Workload Identity Federation (WIF)** :
+    Workload Identity Federation est un mécanisme de sécurité qui permet à des identités externes (comme GitHub Actions) d'assumer l'identité d'un Service Account GCP sans avoir à télécharger et gérer des clés de service statiques.
+    -   **Émission du jeton OIDC** : Lors de l'exécution du workflow GitHub Actions, GitHub génère un jeton OpenID Connect (OIDC). Ce jeton est signé par GitHub et contient des informations vérifiables sur l'identité du workflow (par exemple, le dépôt, l'organisation, le nom du workflow).
+    -   **Échange avec GCP** : Le workflow utilise ce jeton OIDC pour s'authentifier auprès d'un **Pool d'Identités de Charge de Travail (Workload Identity Pool)** configuré dans GCP.
+    -   **Vérification et confiance** : GCP vérifie la signature du jeton OIDC et s'assure que l'émetteur (GitHub) est un fournisseur d'identité de confiance configuré dans le pool.
+    -   **Attribution du rôle de Service Account** : Si la vérification est réussie, GCP permet au workflow d'assumer l'identité du Service Account spécifié (`sa-buildimage@${{ inputs.project_id }}.iam.gserviceaccount.com`).
+    -   **Jeton d'accès temporaire** : En retour, GCP fournit un jeton d'accès OAuth 2.0 de courte durée. Ce jeton permet au workflow d'interagir avec les services GCP en utilisant les permissions du Service Account, sans jamais exposer de clés de longue durée.
+    
+    **Prérequis pour le Service Account GCP (`sa-buildimage`)** :
+    Pour que le Service Account `sa-buildimage` puisse effectuer toutes les opérations nécessaires à la construction et à la validation des images (création de VM temporaires, création d'images, etc.), il doit disposer des rôles IAM (Identity and Access Management) suivants sur le projet GCP cible (`${{ inputs.project_id }}`) :
+    -   `roles/compute.instanceAdmin` : Ce rôle permet de gérer les instances Compute Engine. Il est nécessaire pour :
+        -   Créer, démarrer, arrêter et supprimer les VM temporaires utilisées par Packer pour le build.
+        -   Créer, démarrer, arrêter et supprimer les VM de test utilisées pour la validation.
+    -   `roles/iap.tunnelResourceAccessor` : Ce rôle permet d'utiliser IAP pour effectuer la connexion ssh via Packer
+    -   `roles/serviceAccountUser`         : Ce rôle permet d'utiliser un autre service account (celui de la VM pour la connexion IAP)
+    
+    > **Note** : Ces rôles doivent être attribués spécifiquement au Service Account `sa-buildimage@${{ inputs.project_id }}.iam.gserviceaccount.com` dans le projet GCP où les images seront construites.
+    
 2.  **Initialisation de Packer** : La commande `packer init` télécharge les plugins nécessaires (`googlecompute`, `ansible`).
     > **Point clé** : On utilise un `PACKER_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}` pour éviter les erreurs de "rate limiting" de l'API GitHub.
 
@@ -58,19 +76,17 @@ Ce job ne s'exécute que si l'option `validate` est activée. Il garantit que l'
 
 1.  **Création d'une instance de test** : Une nouvelle VM est créée sur GCP, cette fois-ci en utilisant **l'image que nous venons de construire**.
 
-2.  **Configuration de l'environnement de test** : Un environnement Python est mis en place.
-
-3.  **Exécution des tests Testinfra** :
-    - Les dépendances (`pytest`, `testinfra`) sont installées.
-    - `pytest` est lancé. Il se connecte à l'instance de test via le connecteur `gce` (qui utilise les credentials `gcloud`).
-    - Les tests définis dans `tests/testinfra/test_image.py` sont exécutés :
+2.  **Exécution des tests Goss** :
+    - L'exécutable `goss` est téléchargé sur l'instance de test.
+    - Le fichier de définition des tests (`tests/goss.yaml`) est copié sur l'instance.
+    - `goss` est exécuté sur l'instance. Il valide l'état du serveur en se basant sur les règles définies dans le fichier YAML :
         - Le paquet `nginx` est-il installé ?
         - Le service `nginx` est-il démarré et activé ?
         - Le port `80` est-il en écoute ?
         - Le fichier `index.html` a-t-il le bon contenu et les bonnes permissions ?
     - Si un de ces tests échoue, le workflow échoue.
 
-4.  **Nettoyage** : L'étape `Cleanup test instance` s'exécute **toujours** (`if: always()`), même si les tests ont échoué. Elle supprime la VM de test pour éviter de laisser des ressources orphelines et de générer des coûts inutiles.
+3.  **Nettoyage** : L'étape `Cleanup test instance` s'exécute **toujours** (`if: always()`), même si les tests ont échoué. Elle supprime la VM de test pour éviter de laisser des ressources orphelines et de générer des coûts inutiles.
 
 ---
 
@@ -97,7 +113,6 @@ Cette séparation des préoccupations rend le système plus modulaire et facile 
 ├── templates/
 │   ├── rhel-8/           # Fichiers de configuration Packer pour RHEL 8
 │   └── rhel-9/           # Fichiers de configuration Packer pour RHEL 9
-└── tests/testinfra/
-    ├── requirements.txt  # Dépendances Python pour les tests
-    └── test_image.py     # Scénarios de test pour valider l'image
+└── tests/
+    └── goss.yaml         # Fichier de définition des tests de validation
 ```

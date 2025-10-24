@@ -148,5 +148,5 @@ jobs:
         run: |
           gcloud compute instances delete ${{ steps.create_instance.outputs.INSTANCE_NAME }} \
             --project=${{ inputs.project_id }} \
-            --zone=${{ steps.create_instance.outputs.ZONE }} \
+            --zone=europe-west1-b \
             --quiet

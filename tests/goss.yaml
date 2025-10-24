@@ -4,7 +4,6 @@ port:
     listening: true
     ip:
       - 0.0.0.0
-      - '::'
 
 service:
   nginx:
@@ -21,5 +20,5 @@ file:
     owner: nginx
     group: nginx
     mode: "0755"
-    contains:
+    contents:
       - "<h1>Bienvenue sur mon application</h1>"

@@ -147,6 +147,8 @@ jobs:
         run: |
           pip install -r tests/testinfra/requirements.txt
           pytest --verbose tests/testinfra/test_image.py \
+          pip install -r ./tests/testinfra/requirements.txt
+          pytest --verbose ./tests/testinfra/test_image.py \
             --connection=gce \
             --gce-project-id=${{ inputs.project_id }} \
             --gce-zone=${{ steps.create_instance.outputs.ZONE }} \

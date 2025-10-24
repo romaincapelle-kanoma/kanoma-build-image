@@ -15,7 +15,7 @@
     <strong>Standardisation</strong> : S'assurer que toutes les images sont basées sur une configuration commune et validée.<br>
     <strong>Validation</strong> : Tester chaque image après sa construction pour garantir sa conformité.<br>
     <strong>Sécurité</strong> : Utiliser des méthodes d'authentification modernes et sécurisées (Workload Identity Federation).
-</p> ```
+</p>
 
 
 

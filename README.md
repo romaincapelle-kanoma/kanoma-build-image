@@ -12,7 +12,6 @@
 
 <p style="text-align: right;">
     <strong>Automatisation</strong> : Construire des images sans intervention manuelle.<br>
-    <strong>Standardisation</strong> : S'assurer que toutes les images sont basées sur une configuration commune et validée.<br>
     <strong>Validation</strong> : Tester chaque image après sa construction pour garantir sa conformité.<br>
     <strong>Sécurité</strong> : Utiliser des méthodes d'authentification modernes et sécurisées (Workload Identity Federation).
 </p>

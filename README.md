@@ -7,7 +7,7 @@
     <strong>Version: </strong>0.0.1
     <br>
     <br>
-    Ce projet a pour but de construire des images...
+    Ce projet a pour but de construire des images customisées depuis les images RHEL publiques de Google.
 </p>
 
 <p style="text-align: right;">

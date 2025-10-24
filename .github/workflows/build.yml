@@ -26,6 +26,9 @@ on:
       prefix_name:
         description: 'Prefix de nommage des images (optionnel)'
         type: string
+      validate:
+        default: false
+        type: boolean
 
   workflow_call:
     inputs:

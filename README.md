@@ -1,7 +1,7 @@
 # kanoma-build-image
 
-[![Build RHEL 9](https://github.com/romaincapelle-kanoma/kanoma-build-image/actions/workflows/build.yml/badge.svg?branch=main&event=workflow_dispatch&query=machine_type%3Arhel-9)](https://github.com/YOUR_ORG/YOUR_REPO/actions/workflows/build.yml)
-[![Build RHEL 8](https://github.com/romaincapelle-kanoma/kanoma-build-image/actions/workflows/build.yml/badge.svg?branch=main&event=workflow_dispatch&query=machine_type%3Arhel-8)](https://github.com/YOUR_ORG/YOUR_REPO/actions/workflows/build.yml)
+[![Build RHEL 9](https://github.com/romaincapelle-kanoma/kanoma-build-image/actions/workflows/build.yml/badge.svg?branch=main&event=workflow_dispatch&query=machine_type%3Arhel-9)](https://github.com/romaincapelle-kanoma/kanoma-build-image/actions/workflows/build.yml)
+[![Build RHEL 8](https://github.com/romaincapelle-kanoma/kanoma-build-image/actions/workflows/build.yml/badge.svg?branch=main&event=workflow_dispatch&query=machine_type%3Arhel-8)](https://github.com/romaincapelle-kanoma/kanoma-build-image/actions/workflows/build.yml)
 
 Ce projet a pour but de construire des images de machines virtuelles (VM) pour Google Cloud Platform (GCP) de manière automatisée, reproductible et validée, en utilisant un pipeline CI/CD avec GitHub Actions.
 
@@ -39,9 +39,7 @@ Cette section vous guide pour déclencher manuellement la création d'une image.
 3.  **APIs GCP activées** : L'API `Compute Engine` doit être activée sur votre projet.
 
 ### Étapes de la démo
-
 1.  **Cliquez ici pour lancer le workflow 👉 Exécuter le workflow de build**
-    *(Pensez à remplacer `YOUR_ORG/YOUR_REPO` par votre dépôt)*
 
 2.  Cliquez sur le bouton **"Run workflow"**.
 

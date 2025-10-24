@@ -42,7 +42,7 @@ Cette section vous guide pour déclencher manuellement la création d'une image.
 3.  **APIs GCP activées** : L'API `Compute Engine` doit être activée sur votre projet.
 
 ### Étapes de la démo
-1.  **Cliquez ici pour lancer le workflow 👉 [![Exécuter le workflow de build](https://github.com/romaincapelle-kanoma/kanoma-build-image/actions/workflows/build.yml/badge.svg?branch=main&event=workflow_dispatch&query=machine_type%3Arhel-9)](https://github.com/romaincapelle-kanoma/kanoma-build-image/actions/workflows/build.yml)
+1.  Cliquez ici pour lancer le workflow 👉 [![Exécuter le workflow de build](https://github.com/romaincapelle-kanoma/kanoma-build-image/actions/workflows/build.yml/badge.svg?branch=main&event=workflow_dispatch&query=machine_type%3Arhel-9)](https://github.com/romaincapelle-kanoma/kanoma-build-image/actions/workflows/build.yml)
 
 2.  Cliquez sur le bouton **"Run workflow"**.
 

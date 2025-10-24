@@ -128,36 +128,68 @@ jobs:
           python-version: '3.10'
           cache: 'pip'
 
-      - name: Create test instance from image
-        id: create_instance
+      - name: Generate SSH key
         run: |
-          INSTANCE_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}"
-          ZONE="europe-west9-b"
-          gcloud compute instances create $INSTANCE_NAME \
-            --project=${{ inputs.project_id }} \
-            --zone=$ZONE \
-            --image=${{ needs.build.outputs.IMAGE_NAME }} \
+          ssh-keygen -t rsa -f ./gcp-ssh-key -N "" -C "gcp-user"
+          chmod 400 ./gcp-ssh-key
+          cat ./gcp-ssh-key.pub
+
+      - name: Create GCP Instance
+        run: |
+          # Lire la clé publique pour l'injecter dans les métadonnées
+          PUB_KEY=$(cat ./gcp-ssh-key.pub)
+
+          gcloud compute instances create ${{ env.GCP_INSTANCE_NAME }} \
+            --project=${{ env.GCP_PROJECT_ID }} \
+            --zone=${{ env.GCP_ZONE }} \
             --machine-type=e2-micro \
-            --scopes=https://www.googleapis.com/auth/cloud-platform \
-            --format='value(name)'
-          echo "INSTANCE_NAME=$INSTANCE_NAME" >> "$GITHUB_OUTPUT"
-          echo "ZONE=$ZONE" >> "$GITHUB_OUTPUT"
+            --image-family=debian-11 \
+            --image-project=debian-cloud \
+            --boot-disk-size=10GB \
+            --tags=allow-ssh \ # Important pour le pare-feu
+            --metadata="ssh-keys=gcp-user:$PUB_KEY" # Injecte la clé pour l'utilisateur 'gcp-user'
+          
+          echo "Instance créée."
 
-      - name: Run Testinfra validation
-        id: testinfra
-        working-directory: tests/testinfra/
+      - name: Get Instance External IP
+        id: get_ip # Donne un ID à cette étape pour réutiliser sa sortie
         run: |
-          pip install -r requirements.txt
-          pytest --verbose test_image.py \
-            --connection=gce \
-            --gce-project-id=${{ inputs.project_id }} \
-            --gce-zone=${{ steps.create_instance.outputs.ZONE }} \
-            --hosts=${{ steps.create_instance.outputs.INSTANCE_NAME }}
+          IP_ADDRESS=$(gcloud compute instances describe ${{ env.GCP_INSTANCE_NAME }} \
+            --project=${{ env.GCP_PROJECT_ID }} \
+            --zone=${{ env.GCP_ZONE }} \
+            --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+          
+          echo "Instance IP: $IP_ADDRESS"
+          echo "INSTANCE_IP=$IP_ADDRESS" >> $GITHUB_ENV # Stocke l'IP dans les variables d'env du job
 
-      - name: Cleanup test instance
-        if: always()
+      # 7. Attendre que le port SSH soit prêt
+      - name: Wait for SSH
         run: |
-          gcloud compute instances delete ${{ steps.create_instance.outputs.INSTANCE_NAME }} \
-            --project=${{ inputs.project_id }} \
-            --zone=${{ steps.create_instance.outputs.ZONE }} \
+          echo "Waiting for SSH connection to ${{ env.INSTANCE_IP }}..."
+          # Boucle simple pour attendre que le port 22 soit ouvert
+          # -o StrictHostKeyChecking=no évite la demande de confirmation
+          until ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i ./gcp-ssh-key gcp-user@${{ env.INSTANCE_IP }} "echo 'SSH is up'"
+          do
+            echo "SSH not ready yet, retrying..."
+            sleep 5
+          done
+          echo "SSH connection established."
+
+      # 8. Lancer les tests Testinfra
+      - name: Run Testinfra tests
+        run: |
+          pytest \
+            --hosts="ssh://gcp-user@${{ env.INSTANCE_IP }}" \
+            --ssh-identity-file=./gcp-ssh-key \
+            --ssh-extra-args="-o StrictHostKeyChecking=no" \
+            tests/
+
+      # 9. Nettoyage (s'exécute toujours, même si les tests échouent)
+      - name: Delete GCP Instance
+        if: always() # Garantit le nettoyage
+        run: |
+          echo "Deleting instance ${{ env.GCP_INSTANCE_NAME }}..."
+          gcloud compute instances delete ${{ env.GCP_INSTANCE_NAME }} \
+            --project=${{ env.GCP_PROJECT_ID }} \
+            --zone=${{ env.GCP_ZONE }} \
             --quiet

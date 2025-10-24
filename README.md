@@ -4,6 +4,9 @@
 Ce projet a pour but de construire des images de machines virtuelles (VM) pour Google Cloud Platform (GCP) de manière automatisée, reproductible et validée, en utilisant un pipeline CI/CD avec GitHub Actions.
 
 
+
+
+
 ## Objectifs
 
 - **Automatisation** : Construire des images sans intervention manuelle.

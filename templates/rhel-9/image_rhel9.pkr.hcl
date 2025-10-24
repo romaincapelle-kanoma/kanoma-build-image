@@ -11,7 +11,6 @@ packer {
   }
 }
 
-
 variable "source_image_family" {
   type    = string
   default = "rhel-9"

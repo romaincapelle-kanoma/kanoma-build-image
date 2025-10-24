@@ -47,7 +47,7 @@ Cette section vous guide pour déclencher manuellement la création d'une image.
 
 4.  Cliquez sur **"Run workflow"** pour démarrer.
 
-### Que observer pendant la démo ?
+### Quoi suivre pendant la démo ?
 
 *   **Dans GitHub Actions** :
     1.  Le job `build` démarre, s'authentifie sur GCP.

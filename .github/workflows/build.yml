@@ -145,8 +145,6 @@ jobs:
 
       - name: Run Testinfra validation
         run: |
-          pip install -r tests/testinfra/requirements.txt
-          pytest --verbose tests/testinfra/test_image.py \
           pip install -r ./tests/testinfra/requirements.txt
           pytest --verbose ./tests/testinfra/test_image.py \
             --connection=gce \

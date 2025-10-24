@@ -1,7 +1,7 @@
 # kanoma-build-image
 <img align="left" width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/72cca1bc-14e9-4e4b-b9f2-217a1bcae610" />
 
-<p align="left">
+<p align="right">
    <strong>Status: Bêta</strong>
    <br />
    <strong>Version: </strong>0.0.1

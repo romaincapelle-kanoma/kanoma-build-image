@@ -7,15 +7,15 @@
     <strong>Version: </strong>0.0.1
     <br>
     <br>
-    Ce projet a pour but de construire des images de machines virtuelles (VM) pour Google Cloud Platform (GCP) de manière automatisée, reproductible et validée, en utilisant un pipeline CI/CD avec GitHub Actions.
+    Ce projet a pour but de construire des images...
 </p>
 
-<ul style="text-align: right; list-style-type: none; padding: 0; margin: 0;">
-    <li><strong>Automatisation</strong> : Construire des images sans intervention manuelle.</li>
-    <li><strong>Standardisation</strong> : S'assurer que toutes les images sont basées sur une configuration commune et validée.</li>
-    <li><strong>Validation</strong> : Tester chaque image après sa construction pour garantir sa conformité.</li>
-    <li><strong>Sécurité</strong> : Utiliser des méthodes d'authentification modernes et sécurisées (Workload Identity Federation).</li>
-</ul>
+<p style="text-align: right;">
+    <strong>Automatisation</strong> : Construire des images sans intervention manuelle.<br>
+    <strong>Standardisation</strong> : S'assurer que toutes les images sont basées sur une configuration commune et validée.<br>
+    <strong>Validation</strong> : Tester chaque image après sa construction pour garantir sa conformité.<br>
+    <strong>Sécurité</strong> : Utiliser des méthodes d'authentification modernes et sécurisées (Workload Identity Federation).
+</p> ```
 
 
 

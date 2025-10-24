@@ -16,11 +16,6 @@
     <strong>Sécurité</strong> : Utiliser des méthodes d'authentification modernes et sécurisées (Workload Identity Federation).
 </p>
 
-
-
-## Objectifs
-
-
 ---
 
 ## 1. Composants Principaux

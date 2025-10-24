@@ -1,6 +1,12 @@
 # kanoma-build-image
 
+[![Build RHEL 9](https://github.com/YOUR_ORG/YOUR_REPO/actions/workflows/build.yml/badge.svg?branch=main&event=workflow_dispatch&query=machine_type%3Arhel-9)](https://github.com/YOUR_ORG/YOUR_REPO/actions/workflows/build.yml)
+[![Build RHEL 8](https://github.com/YOUR_ORG/YOUR_REPO/actions/workflows/build.yml/badge.svg?branch=main&event=workflow_dispatch&query=machine_type%3Arhel-8)](https://github.com/YOUR_ORG/YOUR_REPO/actions/workflows/build.yml)
+
+> **Note:** Pensez à remplacer `YOUR_ORG/YOUR_REPO` dans les badges ci-dessus par votre organisation et nom de dépôt.
+
 Ce projet a pour but de construire des images de machines virtuelles (VM) pour Google Cloud Platform (GCP) de manière automatisée, reproductible et validée, en utilisant un pipeline CI/CD avec GitHub Actions.
+
 
 ## Objectifs
 
@@ -23,6 +29,78 @@ Notre pipeline s'articule autour de plusieurs outils clés :
 | **GitHub Actions** | L'orchestrateur CI/CD qui exécute les différentes étapes du processus. |
 
 ---
+
+## 🚀 Démo Live : Lancez votre propre build !
+
+Cette section vous guide pour déclencher manuellement la création d'une image.
+
+### Prérequis pour la démo
+
+1.  **Accès au projet GCP** : Assurez-vous d'avoir un projet GCP configuré.
+2.  **Service Account & WIF** : Le Service Account `sa-buildimage` et la fédération d'identité (Workload Identity Federation) doivent être configurés comme décrit dans la section "Authentification GCP".
+3.  **APIs GCP activées** : L'API `Compute Engine` doit être activée sur votre projet.
+
+### Étapes de la démo
+
+1.  **Cliquez ici pour lancer le workflow 👉 Exécuter le workflow de build**
+    *(Pensez à remplacer `YOUR_ORG/YOUR_REPO` par votre dépôt)*
+
+2.  Cliquez sur le bouton **"Run workflow"**.
+
+3.  **Remplissez les options** comme souhaité :
+    *   **`project_id`**: L'ID de votre projet GCP.
+    *   **`machine_type`**: Choisissez `rhel-9` ou `rhel-8`.
+    *   **`validate`**: Cochez cette case pour lancer la phase de test après le build. **(Recommandé pour la démo !)**
+
+4.  Cliquez sur **"Run workflow"** pour démarrer.
+
+### Que observer pendant la démo ?
+
+*   **Dans GitHub Actions** :
+    1.  Le job `build` démarre, s'authentifie sur GCP.
+    2.  Les logs de Packer montrent la création de la VM temporaire.
+    3.  Les logs d'Ansible affichent la configuration de Nginx.
+    4.  Le job `validate` démarre (si activé).
+
+*   **Dans la console GCP (Projet cible)** :
+    1.  **(Pendant le build)** Allez dans `Compute Engine > Instances de VM`. Vous verrez une instance temporaire nommée `packer-xxxx`. Elle sera supprimée automatiquement à la fin du build.
+    2.  **(Après le build)** Allez dans `Compute Engine > Images`. Vous trouverez votre nouvelle image, nommée `rhel-9-nginx-timestamp` (par exemple).
+    3.  **(Pendant la validation)** Une instance `test-xxxx` est créée à partir de votre nouvelle image. Les tests Goss s'exécutent dessus, puis elle est supprimée.
+
+---
+
+## 2. Diagramme du Pipeline
+
+```mermaid
+graph TD
+    subgraph "Déclencheurs"
+        A[👨‍💻 Manuel via workflow_dispatch]
+        B[🕒 Planifié via schedule]
+    end
+
+    subgraph "GitHub Actions"
+        C(build.yml)
+        A & B --> C
+
+        subgraph "Job: build"
+            D[1. Auth GCP via WIF] --> E[2. Packer Build]
+            E --> F{VM temporaire}
+            F -- provision --> G[Ansible: installe Nginx]
+            G -- crée image --> H[✅ Image GCP]
+            F -- détruite --> E
+        end
+
+        subgraph "Job: validate (si activé)"
+            I[1. Crée VM de test] -- depuis --> H
+            I --> J[2. Lance les tests Goss]
+            J -- valide --> K{Résultat}
+            I -- toujours détruite --> L[🏁 Fin]
+        end
+
+        C --> D
+        H --> I
+    end
+```
 
 ## 2. Fonctionnement du Pipeline de Build (`.github/workflows/build.yml`)
 
@@ -50,13 +128,13 @@ Ce job est responsable de la création de l'image brute.
     
     **Prérequis pour le Service Account GCP (`sa-buildimage`)** :
     Pour que le Service Account `sa-buildimage` puisse effectuer toutes les opérations nécessaires à la construction et à la validation des images (création de VM temporaires, création d'images, etc.), il doit disposer des rôles IAM (Identity and Access Management) suivants sur le projet GCP cible (`${{ inputs.project_id }}`) :
-    -   `roles/compute.instanceAdmin` : Ce rôle permet de gérer les instances Compute Engine. Il est nécessaire pour :
-        -   Créer, démarrer, arrêter et supprimer les VM temporaires utilisées par Packer pour le build.
-        -   Créer, démarrer, arrêter et supprimer les VM de test utilisées pour la validation.
-    -   `roles/iap.tunnelResourceAccessor` : Ce rôle permet d'utiliser IAP pour effectuer la connexion ssh via Packer
-    -   `roles/serviceAccountUser`         : Ce rôle permet d'utiliser un autre service account (celui de la VM pour la connexion IAP)
+    -   `roles/compute.instanceAdmin.v1` : Permet de gérer (créer, supprimer, etc.) les instances Compute Engine. Nécessaire pour la VM de build de Packer et la VM de test de Goss.
+    -   `roles/compute.imageUser` : Permet d'utiliser les images Compute Engine (nécessaire pour créer la VM de build à partir d'une image de base).
+    -   `roles/iam.serviceAccountUser` : Permet au SA du pipeline (`sa-buildimage`) d'emprunter l'identité du Service Account attaché à la VM de build. C'est une bonne pratique de sécurité pour que la VM elle-même ait des permissions définies.
     
     > **Note** : Ces rôles doivent être attribués spécifiquement au Service Account `sa-buildimage@${{ inputs.project_id }}.iam.gserviceaccount.com` dans le projet GCP où les images seront construites.
+        -   Créer, démarrer, arrêter et supprimer les VM temporaires utilisées par Packer pour le build.
+        -   Créer, démarrer, arrêter et supprimer les VM de test utilisées pour la validation.
     
 2.  **Initialisation de Packer** : La commande `packer init` télécharge les plugins nécessaires (`googlecompute`, `ansible`).
     > **Point clé** : On utilise un `PACKER_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}` pour éviter les erreurs de "rate limiting" de l'API GitHub.
@@ -102,7 +180,7 @@ Cette séparation des préoccupations rend le système plus modulaire et facile 
 
 ---
 
-## 4. Structure du Dépôt
+## 5. Structure du Dépôt
 
 ```
 ├── .github/workflows/

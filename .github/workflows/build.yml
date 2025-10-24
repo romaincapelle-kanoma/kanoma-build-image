@@ -139,4 +139,12 @@ jobs:
           gcloud compute ssh ${{ steps.create_instance.outputs.INSTANCE_NAME }} --project=${{ inputs.project_id }} --zone=europe-west1-b --command="curl -L https://github.com/goss-org/goss/releases/latest/download/goss-linux-amd64 -o /tmp/goss && chmod +x /tmp/goss"
           gcloud compute scp --project=${{ inputs.project_id }} --zone=europe-west1-b ansible/goss/goss.yaml ${{ steps.create_instance.outputs.INSTANCE_NAME }}:/tmp/goss.yaml
           gcloud compute ssh ${{ steps.create_instance.outputs.INSTANCE_NAME }} --project=${{ inputs.project_id }} --zone=europe-west1-b --command="sudo /tmp/goss -g /tmp/goss.yaml validate"
+
+      - name: Cleanup test instance
+        if: always() # Cette étape s'exécute toujours, même si les tests échouent
+        run: |
+          gcloud compute instances delete ${{ steps.create_instance.outputs.INSTANCE_NAME }} \
+            --project=${{ inputs.project_id }} \
+            --zone=europe-west1-b \
+            --quiet
           
